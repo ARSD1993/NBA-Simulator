@@ -53,7 +53,7 @@ public class DataCollection {
 		URL sceduleUrl;
 		URL resultUrl;
 		try {
-			DatabaseQuery dbQuery = new DatabaseQuery("ahrshia", "password");
+			DatabaseQuery dbQuery = new DatabaseQuery("ahrshia", "password", "NBA_SIM");
 			if (dbQuery.shouldUpdateSchedule()) {
 				sceduleUrl = new URL(HOST_URL + SCHEDULE_URL);
 			    Document teamDoc = Jsoup.parse(sceduleUrl, 5000);
@@ -111,7 +111,7 @@ public class DataCollection {
 
 	private static void insertPlayerDataToDB(Map<String, Set<String>> teamPlayerMap) {
 		// first check if table should be updated
-	    DatabaseQuery dbQuery = new DatabaseQuery("ahrshia", "password");
+	    DatabaseQuery dbQuery = new DatabaseQuery("ahrshia", "password", "NBA_SIM");
 		if (dbQuery.shouldUpdateData()) {
 			for (Entry<String, Set<String>> s : teamPlayerMap.entrySet()) {
 				// check if table exist. If not create a new table for the team;
@@ -128,6 +128,7 @@ public class DataCollection {
 				for (String playLink: s.getValue()) {
 					try {
 						URL getPlayerUrl = new URL(playLink);
+						System.out.println(getPlayerUrl);
 						Document teamDoc = Jsoup.parse(getPlayerUrl, 5000);
 						Map<String, String> record = new HashMap<String, String>();
 						record.clear();
@@ -138,6 +139,12 @@ public class DataCollection {
 								break;
 							}
 							record.put("PLAYER_NAME", playerNameElement.get(0).text());
+							if (!teamDoc.select("li#player-status-main > h5").isEmpty()) {
+								record.put("IS_PLAYING", teamDoc.select("div.player-status > span").get(0).text().substring(0, 3));
+							}
+							else {
+								record.put("IS_PLAYING", "");
+							}
 							Elements statNums = playPage.select("td");
 							int header = 0;
 							for (int i = 0; i < statNums.size(); i++) {

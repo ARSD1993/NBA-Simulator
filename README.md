@@ -10,7 +10,7 @@
 
 # Todo
 
-  1) The data collection does not account for players that are injured and not able to play. The application will need to be updated to collect a players injury status. This will require another column in the player tables and will require player data collection to be daily so we always know whos playing.
+  1) The application has been updated to discard players who are injured and will not play however it seems that some players who are out for the season do not have an injury status (as an example John Wall), might need to add some player status manually. Still need to update ho often application should collect player data as injury status could change at any point. Might have to make it hourly.
   
   2) Update the algorithm to be better. Too simple at the moment need to look into advanced states and use career player data. May also want to look into keeping a list of specific players who should always have a high rating (aka superstars).
   

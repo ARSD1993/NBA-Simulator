@@ -31,7 +31,7 @@ public class DatabaseQuery {
 		"CAREER_FREE_THROWS_ATTEMPTED DECIMAL(10,5), CAREER_FREE_THROWS_MADE DECIMAL(10,5), CAREER_FREE_THROWS_PERCENT DECIMAL(6,5)," +
 		"CAREER_REBOUNDS_PER_GAME DECIMAL(10,5), CAREER_ASSISTS_PER_GAME DECIMAL(10,5), CAREER_BLOCKS_PER_GAME DECIMAL(10,5)," +
 		"CAREER_STEALS_PER_GAME DECIMAL(10,5), CAREER_PERSONAL_FOULS_PER_GAME DECIMAL(10,5), CAREER_TURNOVERS_PER_GAME DECIMAL(10,5)," +
-		"CAREER_POINTS_PER_GAME DECIMAL(10,5), PRIMARY KEY (PLAYER_NAME))";
+		"CAREER_POINTS_PER_GAME DECIMAL(10,5), IS_PLAYING VARCHAR(4), PRIMARY KEY (PLAYER_NAME))";
 	
 	private final static String CREATE_NBA_SCHEDULE_TABLE = "CREATE TABLE NBA_SCHEDULE (GAME_DATE DATE NOT NULL, TEAM_ONE VARCHAR(64) NOT NULL, TEAM_TWO VARCHAR(64) NOT NULL," +
 			"HOME_TEAM  VARCHAR(64), MY_WINNER VARCHAR(64), ACTUAL_WINNER VARCHAR(64), TEAM_ONE_SCORE DECIMAL(10,5), TEAM_TWO_SCORE DECIMAL(10,5), PRIMARY KEY (GAME_DATE, " +
@@ -41,7 +41,7 @@ public class DatabaseQuery {
 			"VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE TEAM_ONE_SCORE = ?, TEAM_TWO_SCORE = ?, ACTUAL_WINNER = ?";
 	
 	private final static String SELECT_PLAYER_PERFORMANCE = "select PLAYER_NAME, (POINTS_PER_GAME + ASSISTS_PER_GAME * 2 + REBOUNDS_PER_GAME + STEALS_PER_GAME * 2 + BLOCKS_PER_GAME * 2)" +
-			" / MINUTES_PLAYED as PLAYER_PERFORMANCE from %s where MINUTES_PLAYED >= 20";
+			" / MINUTES_PLAYED as PLAYER_PERFORMANCE from %s where MINUTES_PLAYED >= 20 and is_playing = ''";
 	
 	private final static String INSERT_PLAYER_STATEMENT = "INSERT INTO %s (%s) values (";
 	
@@ -58,16 +58,16 @@ public class DatabaseQuery {
     private PreparedStatement preparedStatement = null;
     private ResultSet resultSet = null;
 	
-	public DatabaseQuery (String user, String password) {
+	public DatabaseQuery (String user, String password, String database) {
 		//login to the data
-		login(user, password);
+		login(user, password, database);
 	}
 
-	private void login(String user, String password) {
+	private void login(String user, String password, String database) {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
             connect = DriverManager
-                    .getConnection("jdbc:mysql://localhost/NBA_SIM" +"?user="
+                    .getConnection("jdbc:mysql://localhost/" + database +"?user="
                             + user + "&password=" + password);
 		} 
 		catch (ClassNotFoundException e) {
@@ -201,7 +201,7 @@ public class DatabaseQuery {
 			Object[] arr = values.toArray();
 			for (int i = 0; i < arr.length; i++) {
 				String value = arr[i].toString();
-				if (value.matches("[A-Z]+.*")) {
+				if (value.matches("[A-Z]+.*") || value == null || value.length() == 0) {
 					preparedStatement.setString(i + 1, value);
 				}
 				else {
